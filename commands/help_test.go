@@ -1,0 +1,172 @@
+package commands_test
+
+import (
+	"bytes"
+	"strings"
+
+	"github.com/ryanmoran/inspector/commands"
+	"github.com/ryanmoran/inspector/commands/fakes"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
+
+const (
+	GLOBAL_USAGE = `inspector
+helps to peek into Ops Manager Tiles
+
+Usage: inspector [options] <command> [<args>]
+  -?, --query     asks a question
+  -!, --surprise  gives you a present
+
+Commands:
+  bake   bakes you a cake
+  clean  cleans up after baking
+`
+
+	COMMAND_USAGE = `inspector bake
+This command will help you bake a cake.
+
+Usage: inspector [options] bake [<args>]
+  -?, --query     asks a question
+  -!, --surprise  gives you a present
+
+Command Arguments:
+  -f, --flour   int  cups of flour
+  -b, --butter  int  sticks of butter
+  -l, --lemon   int  teaspoons of lemon juice
+`
+
+	FLAGLESS_USAGE = `inspector bake
+This command will help you bake a cake.
+
+Usage: inspector [options] bake
+  -?, --query     asks a question
+  -!, --surprise  gives you a present
+`
+)
+
+var _ = Describe("Help", func() {
+	var (
+		output *bytes.Buffer
+		flags  string
+	)
+
+	BeforeEach(func() {
+		output = bytes.NewBuffer([]byte{})
+		flags = strings.TrimSpace(`
+-?, --query     asks a question
+-!, --surprise  gives you a present
+`)
+	})
+
+	Describe("Execute", func() {
+		Context("when no command name is given", func() {
+			It("prints the global usage to the output", func() {
+				bake := &fakes.Command{}
+				bake.UsageCall.Returns.Usage = commands.Usage{ShortDescription: "bakes you a cake"}
+
+				clean := &fakes.Command{}
+				clean.UsageCall.Returns.Usage = commands.Usage{ShortDescription: "cleans up after baking"}
+
+				help := commands.NewHelp(output, strings.TrimSpace(flags), commands.Set{
+					"bake":  bake,
+					"clean": clean,
+				})
+				err := help.Execute([]string{})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(output.String()).To(ContainSubstring(GLOBAL_USAGE))
+			})
+		})
+
+		Context("when a command name is given", func() {
+			It("prints the usage for that command", func() {
+				bake := &fakes.Command{}
+				bake.UsageCall.Returns.Usage = commands.Usage{
+					Description:      "This command will help you bake a cake.",
+					ShortDescription: "bakes you a cake",
+					Flags: struct {
+						Flour  int `short:"f" long:"flour"  description:"cups of flour"`
+						Butter int `short:"b" long:"butter" description:"sticks of butter"`
+						Lemon  int `short:"l" long:"lemon"  description:"teaspoons of lemon juice"`
+					}{},
+				}
+
+				help := commands.NewHelp(output, strings.TrimSpace(flags), commands.Set{"bake": bake})
+				err := help.Execute([]string{"bake"})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(output.String()).To(ContainSubstring(COMMAND_USAGE))
+			})
+
+			Context("when the command does not exist", func() {
+				It("returns an error", func() {
+					help := commands.NewHelp(output, flags, commands.Set{})
+					err := help.Execute([]string{"missing-command"})
+					Expect(err).To(MatchError("unknown command: missing-command"))
+				})
+			})
+
+			Context("when the command flags cannot be determined", func() {
+				It("returns an error", func() {
+					bake := &fakes.Command{}
+					bake.UsageCall.Returns.Usage = commands.Usage{
+						Description:      "This command will help you bake a cake.",
+						ShortDescription: "bakes you a cake",
+						Flags:            func() {},
+					}
+
+					help := commands.NewHelp(output, flags, commands.Set{"bake": bake})
+					err := help.Execute([]string{"bake"})
+					Expect(err).To(MatchError("unexpected pointer to non-struct type func"))
+				})
+			})
+
+			Context("when there are no flags", func() {
+				It("prints the usage of a flag-less command", func() {
+					bake := &fakes.Command{}
+					bake.UsageCall.Returns.Usage = commands.Usage{
+						Description:      "This command will help you bake a cake.",
+						ShortDescription: "bakes you a cake",
+					}
+
+					help := commands.NewHelp(output, strings.TrimSpace(flags), commands.Set{"bake": bake})
+					err := help.Execute([]string{"bake"})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(output.String()).To(ContainSubstring(FLAGLESS_USAGE))
+					Expect(output.String()).NotTo(ContainSubstring("Command Arguments"))
+				})
+			})
+
+			Context("when there is an empty flag object", func() {
+				It("prints the usage of a flag-less command", func() {
+					bake := &fakes.Command{}
+					bake.UsageCall.Returns.Usage = commands.Usage{
+						Description:      "This command will help you bake a cake.",
+						ShortDescription: "bakes you a cake",
+						Flags:            struct{}{},
+					}
+
+					help := commands.NewHelp(output, strings.TrimSpace(flags), commands.Set{"bake": bake})
+					err := help.Execute([]string{"bake"})
+					Expect(err).NotTo(HaveOccurred())
+
+					Expect(output.String()).To(ContainSubstring(FLAGLESS_USAGE))
+					Expect(output.String()).NotTo(ContainSubstring("Command Arguments"))
+				})
+			})
+		})
+	})
+
+	Describe("Usage", func() {
+		It("returns usage information for the command", func() {
+			help := commands.NewHelp(nil, "", commands.Set{})
+			Expect(help.Usage()).To(Equal(commands.Usage{
+				Description:      "This command prints this nice usage information.",
+				ShortDescription: "prints this usage information",
+			}))
+		})
+	})
+})
