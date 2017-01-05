@@ -9,33 +9,70 @@ type MetadataJob struct {
 	ParsedManifest map[interface{}]interface{}
 }
 
-func (mj MetadataJob) UnusedManifestProperties(releases []Release) []string {
+type MetadataJobManifestProperty struct {
+	Name                     string
+	ReferencesParsedManifest bool
+}
+
+type MetadataJobManifestProperties []MetadataJobManifestProperty
+
+func (mjmps MetadataJobManifestProperties) Len() int {
+	return len(mjmps)
+}
+
+func (mjmps MetadataJobManifestProperties) Less(i, j int) bool {
+	return mjmps[i].Name < mjmps[j].Name
+}
+
+func (mjmps MetadataJobManifestProperties) Swap(i, j int) {
+	mjmps[i], mjmps[j] = mjmps[j], mjmps[i]
+}
+
+func (mj MetadataJob) UnusedManifestProperties(releases []Release) MetadataJobManifestProperties {
 	var releaseJobProperties ReleaseJobProperties
-	for _, release := range releases {
-		for _, releaseJob := range release.Jobs {
-			releaseJobProperties = append(releaseJobProperties, releaseJob.Properties...)
+	for _, template := range mj.Templates {
+		for _, release := range releases {
+			if template.Release == release.Name {
+				for _, releaseJob := range release.Jobs {
+					if template.Name == releaseJob.Name {
+						releaseJobProperties = append(releaseJobProperties, releaseJob.Properties...)
+					}
+				}
+			}
 		}
 	}
 
-	var unusedManifestProperties []string
-	for _, propertyName := range keysFromManifest(mj.ParsedManifest) {
-		if !releaseJobProperties.Contains(propertyName) {
-			unusedManifestProperties = append(unusedManifestProperties, propertyName)
+	var unusedManifestProperties []MetadataJobManifestProperty
+	for _, property := range propertiesFromManifest(mj.ParsedManifest) {
+		if !releaseJobProperties.Contains(property.Name) {
+			unusedManifestProperties = append(unusedManifestProperties, property)
 		}
 	}
 
 	return unusedManifestProperties
 }
 
-func keysFromManifest(node map[interface{}]interface{}) []string {
-	var keys []string
+func propertiesFromManifest(node map[interface{}]interface{}) []MetadataJobManifestProperty {
+	var keys []MetadataJobManifestProperty
+
 	for key, value := range node {
-		if m, ok := value.(map[interface{}]interface{}); ok {
-			for _, k := range keysFromManifest(m) {
-				keys = append(keys, strings.Join([]string{key.(string), k}, "."))
+		switch m := value.(type) {
+		case map[interface{}]interface{}:
+			for _, k := range propertiesFromManifest(m) {
+				keys = append(keys, MetadataJobManifestProperty{
+					Name: strings.Join([]string{key.(string), k.Name}, "."),
+					ReferencesParsedManifest: k.ReferencesParsedManifest,
+				})
 			}
-		} else {
-			keys = append(keys, key.(string))
+		case string:
+			keys = append(keys, MetadataJobManifestProperty{
+				Name: key.(string),
+				ReferencesParsedManifest: strings.Contains(m, ".parsed_manifest("),
+			})
+		default:
+			keys = append(keys, MetadataJobManifestProperty{
+				Name: key.(string),
+			})
 		}
 	}
 

@@ -61,6 +61,8 @@ job_types:
       machines: ["1.2.3.4"]
       user: nats-user
       password: nats-password
+    parsed:
+      manifest: (( .properties.references.parsed_manifest(example) ))
 `)
 
 	releaseManifestFile := bytes.NewBufferString(`---

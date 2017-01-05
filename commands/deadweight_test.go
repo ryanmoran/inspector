@@ -30,7 +30,7 @@ var _ = Describe("Deadweight", func() {
 								"property": map[interface{}]interface{}{
 									"first":  "one",
 									"second": "two",
-									"fourth": "four",
+									"fourth": "(( .properties.references.parsed_manifest(four) ))",
 								},
 							},
 						},
@@ -59,7 +59,7 @@ var _ = Describe("Deadweight", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(stdout.String()).To(ContainSubstring(`Job: some-job
-  - property.fourth
+  - property.fourth (references parsed manifest)
   - property.second`))
 		})
 	})

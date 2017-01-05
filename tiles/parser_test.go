@@ -1,6 +1,8 @@
 package tiles_test
 
 import (
+	"bytes"
+
 	"github.com/ryanmoran/inspector/tiles"
 
 	. "github.com/onsi/ginkgo"
@@ -10,7 +12,8 @@ import (
 var _ = Describe("Parser", func() {
 	Describe("Parse", func() {
 		It("parses the tile contents", func() {
-			parser := tiles.NewParser(pathToProduct)
+			stdout := bytes.NewBuffer([]byte{})
+			parser := tiles.NewParser(pathToProduct, stdout)
 			product, err := parser.Parse()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -42,6 +45,10 @@ var _ = Describe("Parser", func() {
 					},
 				},
 			}))
+
+			Expect(stdout.String()).To(ContainSubstring("parsing product metadata"))
+			Expect(stdout.String()).To(ContainSubstring("parsing release: some-release"))
+			Expect(stdout.String()).To(ContainSubstring("  - parsing job: some-job"))
 		})
 	})
 })

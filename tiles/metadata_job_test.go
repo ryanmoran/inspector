@@ -22,10 +22,13 @@ var _ = Describe("MetadataJob", func() {
 				},
 				ParsedManifest: map[interface{}]interface{}{
 					"property": map[interface{}]interface{}{
-						"first":  "one",
-						"second": "two",
-						"third":  "three",
-						"fourth": "four",
+						"first": "one",
+						"second": map[interface{}]interface{}{
+							"other": "fields",
+						},
+						"third":    "(( .properties.references.parsed_manifest(three) ))",
+						"fourth":   "four",
+						"not-used": "bad",
 					},
 				},
 			}
@@ -66,9 +69,10 @@ var _ = Describe("MetadataJob", func() {
 				},
 			}
 
-			Expect(metadataJob.UnusedManifestProperties(releases)).To(ConsistOf([]string{
-				"property.first",
-				"property.third",
+			Expect(metadataJob.UnusedManifestProperties(releases)).To(ConsistOf([]tiles.MetadataJobManifestProperty{
+				{Name: "property.first"},
+				{Name: "property.third", ReferencesParsedManifest: true},
+				{Name: "property.not-used"},
 			}))
 		})
 	})

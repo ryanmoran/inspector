@@ -27,6 +27,7 @@ Job: diego_brain
   - nats.password
   - nats.port
   - nats.user
+  - parsed.manifest (references parsed manifest)
 `))
 	})
 })

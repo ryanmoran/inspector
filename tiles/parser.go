@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -21,12 +22,14 @@ var (
 )
 
 type Parser struct {
-	path string
+	path   string
+	stdout io.Writer
 }
 
-func NewParser(path string) Parser {
+func NewParser(path string, stdout io.Writer) Parser {
 	return Parser{
-		path: path,
+		path:   path,
+		stdout: stdout,
 	}
 }
 
@@ -51,6 +54,8 @@ func (p Parser) Parse() (Product, error) {
 
 	for _, f := range productFileZip.File {
 		if metadataRegexp.MatchString(f.FileHeader.Name) {
+			fmt.Fprintln(p.stdout, "parsing product metadata")
+
 			metadataFile, err := f.Open()
 			if err != nil {
 				panic(err)
@@ -103,6 +108,8 @@ func (p Parser) Parse() (Product, error) {
 					if err != nil {
 						panic(err)
 					}
+
+					fmt.Fprintf(p.stdout, "parsing release: %s\n", releaseManifest.Name)
 				}
 
 				if releaseJobRegexp.MatchString(header.Name) {
@@ -129,6 +136,8 @@ func (p Parser) Parse() (Product, error) {
 							if err != nil {
 								panic(err)
 							}
+
+							fmt.Fprintf(p.stdout, "  - parsing job: %s\n", releaseJobManifest.Name)
 
 							var releaseJobProperties []ReleaseJobProperty
 							for propertyName, _ := range releaseJobManifest.Properties {

@@ -30,14 +30,18 @@ func (d Deadweight) Execute(args []string) error {
 		panic(err)
 	}
 
-	fmt.Fprintln(d.stdout, "The following job manifest properties are not being used by the included release templates:")
+	fmt.Fprintln(d.stdout, "\n\nThe following job manifest properties are not being used by the included release templates:")
 	for _, job := range product.Metadata.Jobs {
 		unusedManifestProperties := job.UnusedManifestProperties(product.Releases)
 		if len(unusedManifestProperties) > 0 {
 			fmt.Fprintf(d.stdout, "Job: %s\n", job.Name)
-			sort.Strings(unusedManifestProperties)
+			sort.Sort(unusedManifestProperties)
 			for _, property := range unusedManifestProperties {
-				fmt.Fprintf(d.stdout, "  - %s\n", property)
+				fmt.Fprintf(d.stdout, "  - %s", property.Name)
+				if property.ReferencesParsedManifest {
+					fmt.Fprint(d.stdout, " (references parsed manifest)")
+				}
+				fmt.Fprint(d.stdout, "\n")
 			}
 		}
 	}

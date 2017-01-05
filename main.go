@@ -36,7 +36,7 @@ func main() {
 		command = "help"
 	}
 
-	productParser := tiles.NewParser(global.Path)
+	productParser := tiles.NewParser(global.Path, os.Stdout)
 
 	commandSet := commands.Set{}
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
