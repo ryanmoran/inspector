@@ -13,17 +13,20 @@ const GLOBAL_USAGE = `inspector
 helps to peek into Ops Manager Tiles
 
 Usage: inspector [options] <command> [<args>]
-  -h, --help  bool  prints this usage information (default: false)
+  -h, --help  bool    prints this usage information (default: false)
+  -p, --path  string  path to the product file
 
 Commands:
-  help  prints this usage information
+  deadweight  something dead
+  help        prints this usage information
 `
 
 const HELP_USAGE = `inspector help
 This command prints this nice usage information.
 
 Usage: inspector [options] help
-  -h, --help  bool  prints this usage information (default: false)
+  -h, --help  bool    prints this usage information (default: false)
+  -p, --path  string  path to the product file
 `
 
 var _ = Describe("help", func() {

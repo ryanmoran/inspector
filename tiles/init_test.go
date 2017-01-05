@@ -1,4 +1,4 @@
-package acceptance
+package tiles_test
 
 import (
 	"archive/tar"
@@ -10,65 +10,43 @@ import (
 	"os"
 	"testing"
 
-	"github.com/onsi/gomega/gexec"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var (
-	pathToMain string
-	pathToTile string
-)
-
-func TestAcceptance(t *testing.T) {
+func TestTiles(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "acceptance")
+	RunSpecs(t, "tiles")
 }
+
+var pathToProduct string
 
 var _ = BeforeSuite(func() {
 	var err error
-	pathToMain, err = gexec.Build("github.com/ryanmoran/inspector")
-	Expect(err).NotTo(HaveOccurred())
-
-	pathToTile, err = buildTile()
+	pathToProduct, err = generateProduct()
 	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = AfterSuite(func() {
-	err := os.RemoveAll(pathToTile)
+	err := os.RemoveAll(pathToProduct)
 	Expect(err).NotTo(HaveOccurred())
-
-	gexec.CleanupBuildArtifacts()
 })
 
-func buildTile() (string, error) {
+func generateProduct() (string, error) {
 	metadataFile := bytes.NewBufferString(`---
 job_types:
-- name: diego_brain
+- name: some-job
   manifest: |
-    capi:
-      nsync:
-        cc:
-          staging_upload_user: staging-upload-user
-          staging_upload_password: staging-upload-password
-      stager:
-        cc:
-          staging_upload_user: staging-upload-user
-          staging_upload_password: staging-upload-password
-    nats:
-      port: 1234
-      machines: ["1.2.3.4"]
-      user: nats-user
-      password: nats-password
+    property:
+      first: one
 `)
 
 	releaseManifestFile := bytes.NewBufferString(`---
-name: diego
+name: some-release
 `)
 
 	releaseJobManifestFile := bytes.NewBufferString(`---
-name: nsync
+name: some-job
 properties:
   some-property: {}
 `)
