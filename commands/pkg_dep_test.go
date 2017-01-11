@@ -38,7 +38,7 @@ var _ = Describe("PkgDep", func() {
 							{
 								Name: "some-package-3",
 								Dependencies: []string{
-									"otherdep-3",
+									"somedep-3",
 									"otherdep-2",
 									"another-somedep2",
 								},
@@ -55,8 +55,8 @@ var _ = Describe("PkgDep", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(stdout.String()).To(ContainSubstring(`Release: some-release
-  - some-package-1
-  - some-package-3`))
+  - some-package-1 [somedep-1]
+  - some-package-3 [somedep-3 another-somedep2]`))
 		})
 
 		Describe("error cases", func() {

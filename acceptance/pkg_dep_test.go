@@ -19,8 +19,8 @@ var _ = Describe("pkg-dep", func() {
 		Eventually(session).Should(gexec.Exit(0))
 		Expect(string(session.Out.Contents())).To(ContainSubstring(`The following packages have a dependency that matches "golang":
 Release: diego
-  - acceptance-tests
-  - auctioneer
+  - acceptance-tests [golang1.5]
+  - auctioneer [golang1.6 1.7golang]
 `))
 	})
 })

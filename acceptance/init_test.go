@@ -75,6 +75,7 @@ compiled_packages:
 - name: auctioneer
   dependencies:
   - golang1.6
+  - 1.7golang
 `)
 
 	releaseJobManifestFile := bytes.NewBufferString(`---

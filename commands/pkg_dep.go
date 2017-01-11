@@ -4,14 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
+	"regexp"
 
 	"github.com/ryanmoran/inspector/flags"
 )
 
 type pkgDepMatch struct {
 	Release  string
-	Packages []string
+	Packages []pkgDepMatchPackage
+}
+
+type pkgDepMatchPackage struct {
+	Name         string
+	Dependencies []string
 }
 
 type PkgDep struct {
@@ -39,6 +44,11 @@ func (pd PkgDep) Execute(args []string) error {
 		return errors.New("-match is a required flag")
 	}
 
+	matchRegexp, err := regexp.Compile(pd.Options.Match)
+	if err != nil {
+		panic(err)
+	}
+
 	product, err := pd.productParser.Parse()
 	if err != nil {
 		panic(err)
@@ -46,12 +56,20 @@ func (pd PkgDep) Execute(args []string) error {
 
 	var matches []pkgDepMatch
 	for _, release := range product.Releases {
-		var packages []string
+		var packages []pkgDepMatchPackage
 		for _, pkg := range release.Packages {
+			var dependencies []string
 			for _, dependency := range pkg.Dependencies {
-				if strings.Contains(dependency, pd.Options.Match) {
-					packages = append(packages, pkg.Name)
+				if matchRegexp.MatchString(dependency) {
+					dependencies = append(dependencies, dependency)
 				}
+			}
+
+			if len(dependencies) > 0 {
+				packages = append(packages, pkgDepMatchPackage{
+					Name:         pkg.Name,
+					Dependencies: dependencies,
+				})
 			}
 		}
 		if len(packages) > 0 {
@@ -66,7 +84,7 @@ func (pd PkgDep) Execute(args []string) error {
 	for _, m := range matches {
 		fmt.Fprintf(pd.stdout, "Release: %s\n", m.Release)
 		for _, pkg := range m.Packages {
-			fmt.Fprintf(pd.stdout, "  - %s\n", pkg)
+			fmt.Fprintf(pd.stdout, "  - %s %v\n", pkg.Name, pkg.Dependencies)
 		}
 	}
 
