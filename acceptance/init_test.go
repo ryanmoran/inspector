@@ -67,6 +67,14 @@ job_types:
 
 	releaseManifestFile := bytes.NewBufferString(`---
 name: diego
+compiled_packages:
+- name: acceptance-tests
+  dependencies:
+  - cli
+  - golang1.5
+- name: auctioneer
+  dependencies:
+  - golang1.6
 `)
 
 	releaseJobManifestFile := bytes.NewBufferString(`---
