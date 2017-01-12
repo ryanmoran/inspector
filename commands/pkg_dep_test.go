@@ -19,7 +19,7 @@ var _ = Describe("PkgDep", func() {
 				Releases: []tiles.Release{
 					{
 						Name: "some-release",
-						Packages: []tiles.ReleasePackage{
+						CompiledPackages: []tiles.ReleasePackage{
 							{
 								Name: "some-package-1",
 								Dependencies: []string{
@@ -35,6 +35,8 @@ var _ = Describe("PkgDep", func() {
 									"otherdep-1",
 								},
 							},
+						},
+						Packages: []tiles.ReleasePackage{
 							{
 								Name: "some-package-3",
 								Dependencies: []string{

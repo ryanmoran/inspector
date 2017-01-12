@@ -72,6 +72,7 @@ compiled_packages:
   dependencies:
   - cli
   - golang1.5
+packages:
 - name: auctioneer
   dependencies:
   - golang1.6

@@ -57,6 +57,22 @@ func (pd PkgDep) Execute(args []string) error {
 	var matches []pkgDepMatch
 	for _, release := range product.Releases {
 		var packages []pkgDepMatchPackage
+		for _, pkg := range release.CompiledPackages {
+			var dependencies []string
+			for _, dependency := range pkg.Dependencies {
+				if matchRegexp.MatchString(dependency) {
+					dependencies = append(dependencies, dependency)
+				}
+			}
+
+			if len(dependencies) > 0 {
+				packages = append(packages, pkgDepMatchPackage{
+					Name:         pkg.Name,
+					Dependencies: dependencies,
+				})
+			}
+		}
+
 		for _, pkg := range release.Packages {
 			var dependencies []string
 			for _, dependency := range pkg.Dependencies {
@@ -72,6 +88,7 @@ func (pd PkgDep) Execute(args []string) error {
 				})
 			}
 		}
+
 		if len(packages) > 0 {
 			matches = append(matches, pkgDepMatch{
 				Release:  release.Name,
