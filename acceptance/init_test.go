@@ -80,6 +80,9 @@ packages:
   dependencies:
   - golang1.6
   - 1.7golang
+- name: golang1.6
+- name: 1.7golang
+- name: golang1.5
 jobs:
 - name: auctioneer
 - name: nsync
@@ -87,7 +90,11 @@ jobs:
 `)
 
 	releaseJobManifestFile := bytes.NewBufferString(`---
-name: nsync
+name: auctioneer
+packages:
+- auctioneer
+- golang1.6
+- 1.7golang
 properties:
   some-property: {}
 `)

@@ -131,6 +131,7 @@ func (p Parser) Parse() (Product, error) {
 							var releaseJobManifest struct {
 								Name       string              `yaml:"name"`
 								Properties map[string]struct{} `yaml:"properties"`
+								Packages   []string            `yaml:"packages"`
 							}
 							err = yaml.Unmarshal(releaseJobManifestContents, &releaseJobManifest)
 							if err != nil {
@@ -149,6 +150,7 @@ func (p Parser) Parse() (Product, error) {
 							releaseManifest.Jobs = append(releaseManifest.Jobs, ReleaseJob{
 								Name:       releaseJobManifest.Name,
 								Properties: releaseJobProperties,
+								Packages:   releaseJobManifest.Packages,
 							})
 						}
 
@@ -169,8 +171,10 @@ func (p Parser) Parse() (Product, error) {
 		}
 	}
 
-	return Product{
+	product := Product{
 		Metadata: productManifest,
 		Releases: productReleases,
-	}, nil
+	}
+
+	return product, nil
 }

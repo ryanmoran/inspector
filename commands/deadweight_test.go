@@ -39,12 +39,28 @@ var _ = Describe("Deadweight", func() {
 				Releases: []tiles.Release{
 					{
 						Name: "some-release",
+						Packages: []tiles.ReleasePackage{
+							{Name: "some-package-1"},
+							{Name: "some-package-4"},
+							{Name: "some-package-5"},
+						},
+						CompiledPackages: []tiles.ReleasePackage{
+							{Name: "some-package-2"},
+							{
+								Name:         "some-package-3",
+								Dependencies: []string{"some-package-4"},
+							},
+						},
 						Jobs: []tiles.ReleaseJob{
 							{
 								Name: "some-job-template-1",
 								Properties: []tiles.ReleaseJobProperty{
 									{Name: "property.first"},
 									{Name: "property.third"},
+								},
+								Packages: []string{
+									"some-package-1",
+									"some-package-3",
 								},
 							},
 							{
@@ -71,6 +87,10 @@ var _ = Describe("Deadweight", func() {
 			Expect(stdout.String()).To(ContainSubstring(`Release: some-release
   - some-job-template-2
   - some-job-template-3`))
+
+			Expect(stdout.String()).To(ContainSubstring(`Release: some-release
+  - some-package-2
+  - some-package-5`))
 		})
 	})
 

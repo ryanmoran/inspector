@@ -44,3 +44,51 @@ func (p Product) UnusedReleaseJobs() []Release {
 
 	return releases
 }
+
+func (p Product) UnusedReleasePackages() []Release {
+	var releases []Release
+
+	packageUsageCounts := map[string]map[string]int{}
+	for _, release := range p.Releases {
+		packageUsageCounts[release.Name] = map[string]int{}
+		for _, pkg := range append(release.Packages, release.CompiledPackages...) {
+			packageUsageCounts[release.Name][pkg.Name] = 0
+		}
+	}
+
+	for _, metadataJob := range p.Metadata.Jobs {
+		for _, metadataJobTemplate := range metadataJob.Templates {
+			for _, release := range p.Releases {
+				if metadataJobTemplate.Release == release.Name {
+					for _, releaseJob := range release.Jobs {
+						for _, pkg := range releaseJob.AllPackages(release) {
+							packageUsageCounts[release.Name][pkg]++
+						}
+					}
+				}
+			}
+		}
+	}
+
+	for _, releasePackages := range packageUsageCounts {
+		for packageName, count := range releasePackages {
+			if count != 0 {
+				delete(releasePackages, packageName)
+			}
+		}
+	}
+
+	for releaseName, releasePackage := range packageUsageCounts {
+		if len(releasePackage) > 0 {
+			release := Release{Name: releaseName}
+
+			for packageName, _ := range releasePackage {
+				release.Packages = append(release.Packages, ReleasePackage{Name: packageName})
+			}
+
+			releases = append(releases, release)
+		}
+	}
+
+	return releases
+}

@@ -34,6 +34,12 @@ The following release jobs are not being used:
 Release: diego
   - nsync
   - rep
+
+
+The following release packages are not being used:
+Release: diego
+  - acceptance-tests
+  - golang1.5
 `))
 	})
 })

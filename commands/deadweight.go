@@ -61,6 +61,21 @@ func (d Deadweight) Execute(args []string) error {
 		}
 	}
 
+	fmt.Fprintln(d.stdout, "\n\nThe following release packages are not being used:")
+	for _, release := range product.UnusedReleasePackages() {
+		fmt.Fprintf(d.stdout, "Release: %s\n", release.Name)
+		var packages []string
+		for _, pkg := range release.Packages {
+			packages = append(packages, pkg.Name)
+		}
+
+		sort.Strings(packages)
+
+		for _, pkg := range packages {
+			fmt.Fprintf(d.stdout, "  - %s\n", pkg)
+		}
+	}
+
 	return nil
 }
 
