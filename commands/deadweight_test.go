@@ -22,7 +22,7 @@ var _ = Describe("Deadweight", func() {
 							Name: "some-job",
 							Templates: []tiles.MetadataJobTemplate{
 								{
-									Name:    "some-job-template",
+									Name:    "some-job-template-1",
 									Release: "some-release",
 								},
 							},
@@ -41,11 +41,17 @@ var _ = Describe("Deadweight", func() {
 						Name: "some-release",
 						Jobs: []tiles.ReleaseJob{
 							{
-								Name: "some-job-template",
+								Name: "some-job-template-1",
 								Properties: []tiles.ReleaseJobProperty{
 									{Name: "property.first"},
 									{Name: "property.third"},
 								},
+							},
+							{
+								Name: "some-job-template-2",
+							},
+							{
+								Name: "some-job-template-3",
 							},
 						},
 					},
@@ -61,6 +67,10 @@ var _ = Describe("Deadweight", func() {
 			Expect(stdout.String()).To(ContainSubstring(`Job: some-job
   - property.fourth (references parsed manifest)
   - property.second`))
+
+			Expect(stdout.String()).To(ContainSubstring(`Release: some-release
+  - some-job-template-2
+  - some-job-template-3`))
 		})
 	})
 

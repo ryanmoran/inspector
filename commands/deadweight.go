@@ -46,6 +46,42 @@ func (d Deadweight) Execute(args []string) error {
 		}
 	}
 
+	fmt.Fprintln(d.stdout, "\n\nThe following job templates are not being used:")
+	jobTemplateUsageCounts := map[string]map[string]int{}
+	for _, release := range product.Releases {
+		jobTemplateUsageCounts[release.Name] = map[string]int{}
+		for _, job := range release.Jobs {
+			jobTemplateUsageCounts[release.Name][job.Name] = 0
+		}
+	}
+	for _, job := range product.Metadata.Jobs {
+		for _, template := range job.Templates {
+			jobTemplateUsageCounts[template.Release][template.Name]++
+		}
+	}
+	for _, release := range jobTemplateUsageCounts {
+		for jobName, count := range release {
+			if count != 0 {
+				delete(release, jobName)
+			}
+		}
+	}
+	for releaseName, release := range jobTemplateUsageCounts {
+		if len(release) > 0 {
+			fmt.Fprintf(d.stdout, "Release: %s\n", releaseName)
+			var jobs []string
+			for jobName, _ := range release {
+				jobs = append(jobs, jobName)
+			}
+
+			sort.Strings(jobs)
+
+			for _, job := range jobs {
+				fmt.Fprintf(d.stdout, "  - %s\n", job)
+			}
+		}
+	}
+
 	return nil
 }
 

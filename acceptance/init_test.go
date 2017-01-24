@@ -46,6 +46,9 @@ func buildTile() (string, error) {
 	metadataFile := bytes.NewBufferString(`---
 job_types:
 - name: diego_brain
+  templates:
+  - name: auctioneer
+    release: diego
   manifest: |
     capi:
       nsync:
@@ -77,6 +80,10 @@ packages:
   dependencies:
   - golang1.6
   - 1.7golang
+jobs:
+- name: auctioneer
+- name: nsync
+- name: rep
 `)
 
 	releaseJobManifestFile := bytes.NewBufferString(`---

@@ -28,6 +28,12 @@ Job: diego_brain
   - nats.port
   - nats.user
   - parsed.manifest (references parsed manifest)
+
+
+The following job templates are not being used:
+Release: diego
+  - nsync
+  - rep
 `))
 	})
 })
