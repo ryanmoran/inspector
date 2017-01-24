@@ -30,7 +30,7 @@ Job: diego_brain
   - parsed.manifest (references parsed manifest)
 
 
-The following job templates are not being used:
+The following release jobs are not being used:
 Release: diego
   - nsync
   - rep

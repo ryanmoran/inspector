@@ -46,39 +46,18 @@ func (d Deadweight) Execute(args []string) error {
 		}
 	}
 
-	fmt.Fprintln(d.stdout, "\n\nThe following job templates are not being used:")
-	jobTemplateUsageCounts := map[string]map[string]int{}
-	for _, release := range product.Releases {
-		jobTemplateUsageCounts[release.Name] = map[string]int{}
+	fmt.Fprintln(d.stdout, "\n\nThe following release jobs are not being used:")
+	for _, release := range product.UnusedReleaseJobs() {
+		fmt.Fprintf(d.stdout, "Release: %s\n", release.Name)
+		var jobs []string
 		for _, job := range release.Jobs {
-			jobTemplateUsageCounts[release.Name][job.Name] = 0
+			jobs = append(jobs, job.Name)
 		}
-	}
-	for _, job := range product.Metadata.Jobs {
-		for _, template := range job.Templates {
-			jobTemplateUsageCounts[template.Release][template.Name]++
-		}
-	}
-	for _, release := range jobTemplateUsageCounts {
-		for jobName, count := range release {
-			if count != 0 {
-				delete(release, jobName)
-			}
-		}
-	}
-	for releaseName, release := range jobTemplateUsageCounts {
-		if len(release) > 0 {
-			fmt.Fprintf(d.stdout, "Release: %s\n", releaseName)
-			var jobs []string
-			for jobName, _ := range release {
-				jobs = append(jobs, jobName)
-			}
 
-			sort.Strings(jobs)
+		sort.Strings(jobs)
 
-			for _, job := range jobs {
-				fmt.Fprintf(d.stdout, "  - %s\n", job)
-			}
+		for _, job := range jobs {
+			fmt.Fprintf(d.stdout, "  - %s\n", job)
 		}
 	}
 
