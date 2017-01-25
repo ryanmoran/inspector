@@ -61,8 +61,10 @@ func (p Product) UnusedReleasePackages() []Release {
 			for _, release := range p.Releases {
 				if metadataJobTemplate.Release == release.Name {
 					for _, releaseJob := range release.Jobs {
-						for _, pkg := range releaseJob.AllPackages(release) {
-							packageUsageCounts[release.Name][pkg]++
+						if metadataJobTemplate.Name == releaseJob.Name {
+							for _, pkg := range releaseJob.AllPackages(release) {
+								packageUsageCounts[release.Name][pkg]++
+							}
 						}
 					}
 				}
@@ -78,11 +80,11 @@ func (p Product) UnusedReleasePackages() []Release {
 		}
 	}
 
-	for releaseName, releasePackage := range packageUsageCounts {
-		if len(releasePackage) > 0 {
+	for releaseName, releasePackages := range packageUsageCounts {
+		if len(releasePackages) > 0 {
 			release := Release{Name: releaseName}
 
-			for packageName, _ := range releasePackage {
+			for packageName, _ := range releasePackages {
 				release.Packages = append(release.Packages, ReleasePackage{Name: packageName})
 			}
 

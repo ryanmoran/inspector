@@ -65,6 +65,9 @@ var _ = Describe("Deadweight", func() {
 							},
 							{
 								Name: "some-job-template-2",
+								Packages: []string{
+									"some-package-2",
+								},
 							},
 							{
 								Name: "some-job-template-3",
