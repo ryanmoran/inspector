@@ -119,12 +119,12 @@ func (pd PkgDep) Execute(args []string) error {
 	fmt.Fprintf(pd.stdout, "\n\nThe following jobs/packages have a dependency that matches %q:\n", pd.Options.Match)
 	for _, m := range matches {
 		fmt.Fprintf(pd.stdout, "Release: %s\n", m.Release)
-		for _, pkg := range m.Packages {
-			fmt.Fprintf(pd.stdout, "  - pkg: %s %v\n", pkg.Name, pkg.Dependencies)
-		}
-
 		for _, job := range m.Jobs {
 			fmt.Fprintf(pd.stdout, "  - job: %s %v\n", job.Name, job.Dependencies)
+		}
+
+		for _, pkg := range m.Packages {
+			fmt.Fprintf(pd.stdout, "  - pkg: %s %v\n", pkg.Name, pkg.Dependencies)
 		}
 	}
 

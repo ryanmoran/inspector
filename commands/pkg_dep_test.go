@@ -71,10 +71,10 @@ var _ = Describe("PkgDep", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(stdout.String()).To(ContainSubstring(`Release: some-release
-  - pkg: some-package-1 [somedep-1]
-  - pkg: some-package-3 [somedep-3 another-somedep2]
   - job: some-job-1 [somedep-1]
-  - job: some-job-2 [somedep-3]`))
+  - job: some-job-2 [somedep-3]
+  - pkg: some-package-1 [somedep-1]
+  - pkg: some-package-3 [somedep-3 another-somedep2]`))
 		})
 
 		Describe("error cases", func() {
