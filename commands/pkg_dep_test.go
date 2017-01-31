@@ -19,6 +19,20 @@ var _ = Describe("PkgDep", func() {
 				Releases: []tiles.Release{
 					{
 						Name: "some-release",
+						Jobs: []tiles.ReleaseJob{
+							{
+								Name: "some-job-1",
+								Packages: []string{
+									"somedep-1",
+								},
+							},
+							{
+								Name: "some-job-2",
+								Packages: []string{
+									"somedep-3",
+								},
+							},
+						},
 						CompiledPackages: []tiles.ReleasePackage{
 							{
 								Name: "some-package-1",
@@ -57,8 +71,10 @@ var _ = Describe("PkgDep", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(stdout.String()).To(ContainSubstring(`Release: some-release
-  - some-package-1 [somedep-1]
-  - some-package-3 [somedep-3 another-somedep2]`))
+  - pkg: some-package-1 [somedep-1]
+  - pkg: some-package-3 [somedep-3 another-somedep2]
+  - job: some-job-1 [somedep-1]
+  - job: some-job-2 [somedep-3]`))
 		})
 
 		Describe("error cases", func() {

@@ -76,7 +76,7 @@ compiled_packages:
   - cli
   - golang1.5
 packages:
-- name: auctioneer
+- name: auctioneer-pkg
   dependencies:
   - golang1.6
   - 1.7golang
@@ -92,7 +92,7 @@ jobs:
 	releaseJobManifestFile := bytes.NewBufferString(`---
 name: auctioneer
 packages:
-- auctioneer
+- auctioneer-pkg
 - golang1.6
 - 1.7golang
 properties:

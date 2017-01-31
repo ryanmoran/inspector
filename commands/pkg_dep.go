@@ -12,6 +12,7 @@ import (
 type pkgDepMatch struct {
 	Release  string
 	Packages []pkgDepMatchPackage
+	Jobs     []pkgDepMatchPackage
 }
 
 type pkgDepMatchPackage struct {
@@ -89,19 +90,41 @@ func (pd PkgDep) Execute(args []string) error {
 			}
 		}
 
-		if len(packages) > 0 {
+		var jobs []pkgDepMatchPackage
+		for _, job := range release.Jobs {
+			var dependencies []string
+			for _, dependency := range job.Packages {
+				if matchRegexp.MatchString(dependency) {
+					dependencies = append(dependencies, dependency)
+				}
+			}
+
+			if len(dependencies) > 0 {
+				jobs = append(jobs, pkgDepMatchPackage{
+					Name:         job.Name,
+					Dependencies: dependencies,
+				})
+			}
+		}
+
+		if len(packages) > 0 || len(jobs) > 0 {
 			matches = append(matches, pkgDepMatch{
 				Release:  release.Name,
 				Packages: packages,
+				Jobs:     jobs,
 			})
 		}
 	}
 
-	fmt.Fprintf(pd.stdout, "\n\nThe following packages have a dependency that matches %q:\n", pd.Options.Match)
+	fmt.Fprintf(pd.stdout, "\n\nThe following jobs/packages have a dependency that matches %q:\n", pd.Options.Match)
 	for _, m := range matches {
 		fmt.Fprintf(pd.stdout, "Release: %s\n", m.Release)
 		for _, pkg := range m.Packages {
-			fmt.Fprintf(pd.stdout, "  - %s %v\n", pkg.Name, pkg.Dependencies)
+			fmt.Fprintf(pd.stdout, "  - pkg: %s %v\n", pkg.Name, pkg.Dependencies)
+		}
+
+		for _, job := range m.Jobs {
+			fmt.Fprintf(pd.stdout, "  - job: %s %v\n", job.Name, job.Dependencies)
 		}
 	}
 

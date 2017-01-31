@@ -17,10 +17,11 @@ var _ = Describe("pkg-dep", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(session).Should(gexec.Exit(0))
-		Expect(string(session.Out.Contents())).To(ContainSubstring(`The following packages have a dependency that matches "golang":
+		Expect(string(session.Out.Contents())).To(ContainSubstring(`The following jobs/packages have a dependency that matches "golang":
 Release: diego
-  - acceptance-tests [golang1.5]
-  - auctioneer [golang1.6 1.7golang]
+  - pkg: acceptance-tests [golang1.5]
+  - pkg: auctioneer-pkg [golang1.6 1.7golang]
+  - job: auctioneer [golang1.6 1.7golang]
 `))
 	})
 })
