@@ -21,6 +21,7 @@ var _ = Describe("deadweight", func() {
 Job: diego_brain
   - capi.nsync.cc.staging_upload_password
   - capi.nsync.cc.staging_upload_user
+  - capi.stager.cc.property_default (value "default-value" is already default)
   - capi.stager.cc.staging_upload_password
   - capi.stager.cc.staging_upload_user
   - nats.machines

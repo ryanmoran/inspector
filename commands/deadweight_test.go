@@ -31,6 +31,7 @@ var _ = Describe("Deadweight", func() {
 									"first":  "one",
 									"second": "two",
 									"fourth": "(( .properties.references.parsed_manifest(four) ))",
+									"fifth":  "default",
 								},
 							},
 						},
@@ -57,6 +58,7 @@ var _ = Describe("Deadweight", func() {
 								Properties: []tiles.ReleaseJobProperty{
 									{Name: "property.first"},
 									{Name: "property.third"},
+									{Name: "property.fifth", Default: "default"},
 								},
 								Packages: []string{
 									"some-package-1",
@@ -84,6 +86,7 @@ var _ = Describe("Deadweight", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(stdout.String()).To(ContainSubstring(`Job: some-job
+  - property.fifth (value "default" is already default)
   - property.fourth (references parsed manifest)
   - property.second`))
 

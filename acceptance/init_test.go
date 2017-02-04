@@ -59,6 +59,7 @@ job_types:
         cc:
           staging_upload_user: staging-upload-user
           staging_upload_password: staging-upload-password
+          property_default: default-value
     nats:
       port: 1234
       machines: ["1.2.3.4"]
@@ -97,6 +98,8 @@ packages:
 - 1.7golang
 properties:
   some-property: {}
+  capi.stager.cc.property_default:
+    default: default-value
 `)
 
 	releaseJobFile := bytes.NewBuffer([]byte{})

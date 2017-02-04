@@ -1,6 +1,9 @@
 package tiles
 
-import "strings"
+import (
+	"reflect"
+	"strings"
+)
 
 type MetadataJob struct {
 	Name           string                `yaml:"name"`
@@ -10,8 +13,11 @@ type MetadataJob struct {
 }
 
 type MetadataJobManifestProperty struct {
-	Name                     string
+	Name  string
+	Value interface{}
+
 	ReferencesParsedManifest bool
+	MirrorsDefault           bool
 }
 
 type MetadataJobManifestProperties []MetadataJobManifestProperty
@@ -44,8 +50,14 @@ func (mj MetadataJob) UnusedManifestProperties(releases []Release) MetadataJobMa
 
 	var unusedManifestProperties []MetadataJobManifestProperty
 	for _, property := range propertiesFromManifest(mj.ParsedManifest) {
-		if !releaseJobProperties.Contains(property.Name) {
+		jobProperty, found := releaseJobProperties.Find(property.Name)
+		if !found {
 			unusedManifestProperties = append(unusedManifestProperties, property)
+		} else {
+			if reflect.DeepEqual(property.Value, jobProperty.Default) {
+				property.MirrorsDefault = true
+				unusedManifestProperties = append(unusedManifestProperties, property)
+			}
 		}
 	}
 
@@ -62,16 +74,19 @@ func propertiesFromManifest(node map[interface{}]interface{}) []MetadataJobManif
 				keys = append(keys, MetadataJobManifestProperty{
 					Name: strings.Join([]string{key.(string), k.Name}, "."),
 					ReferencesParsedManifest: k.ReferencesParsedManifest,
+					Value: k.Value,
 				})
 			}
 		case string:
 			keys = append(keys, MetadataJobManifestProperty{
 				Name: key.(string),
 				ReferencesParsedManifest: strings.Contains(m, ".parsed_manifest("),
+				Value: m,
 			})
 		default:
 			keys = append(keys, MetadataJobManifestProperty{
-				Name: key.(string),
+				Name:  key.(string),
+				Value: m,
 			})
 		}
 	}

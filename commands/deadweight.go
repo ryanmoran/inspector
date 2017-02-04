@@ -41,6 +41,9 @@ func (d Deadweight) Execute(args []string) error {
 				if property.ReferencesParsedManifest {
 					fmt.Fprint(d.stdout, " (references parsed manifest)")
 				}
+				if property.MirrorsDefault {
+					fmt.Fprintf(d.stdout, " (value \"%v\" is already default)", property.Value)
+				}
 				fmt.Fprint(d.stdout, "\n")
 			}
 		}

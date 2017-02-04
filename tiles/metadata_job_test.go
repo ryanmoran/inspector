@@ -29,6 +29,7 @@ var _ = Describe("MetadataJob", func() {
 						"third":    "(( .properties.references.parsed_manifest(three) ))",
 						"fourth":   "four",
 						"not-used": "bad",
+						"default":  "default",
 					},
 				},
 			}
@@ -63,6 +64,7 @@ var _ = Describe("MetadataJob", func() {
 							Name: "fourth-template",
 							Properties: []tiles.ReleaseJobProperty{
 								{Name: "property.fourth"},
+								{Name: "property.default", Default: "default"},
 							},
 						},
 					},
@@ -70,9 +72,24 @@ var _ = Describe("MetadataJob", func() {
 			}
 
 			Expect(metadataJob.UnusedManifestProperties(releases)).To(ConsistOf([]tiles.MetadataJobManifestProperty{
-				{Name: "property.first"},
-				{Name: "property.third", ReferencesParsedManifest: true},
-				{Name: "property.not-used"},
+				{
+					Name:  "property.first",
+					Value: "one",
+				},
+				{
+					Name:  "property.third",
+					Value: "(( .properties.references.parsed_manifest(three) ))",
+					ReferencesParsedManifest: true,
+				},
+				{
+					Name:  "property.not-used",
+					Value: "bad",
+				},
+				{
+					Name:           "property.default",
+					Value:          "default",
+					MirrorsDefault: true,
+				},
 			}))
 		})
 	})

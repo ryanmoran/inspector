@@ -129,9 +129,11 @@ func (p Parser) Parse() (Product, error) {
 							}
 
 							var releaseJobManifest struct {
-								Name       string              `yaml:"name"`
-								Properties map[string]struct{} `yaml:"properties"`
-								Packages   []string            `yaml:"packages"`
+								Name       string `yaml:"name"`
+								Properties map[string]struct {
+									Default interface{} `yaml:"default"`
+								} `yaml:"properties"`
+								Packages []string `yaml:"packages"`
 							}
 							err = yaml.Unmarshal(releaseJobManifestContents, &releaseJobManifest)
 							if err != nil {
@@ -141,9 +143,10 @@ func (p Parser) Parse() (Product, error) {
 							fmt.Fprintf(p.stdout, "  - parsing job: %s\n", releaseJobManifest.Name)
 
 							var releaseJobProperties []ReleaseJobProperty
-							for propertyName, _ := range releaseJobManifest.Properties {
+							for propertyName, propertySpec := range releaseJobManifest.Properties {
 								releaseJobProperties = append(releaseJobProperties, ReleaseJobProperty{
-									Name: propertyName,
+									Name:    propertyName,
+									Default: propertySpec.Default,
 								})
 							}
 

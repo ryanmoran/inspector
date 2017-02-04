@@ -3,17 +3,18 @@ package tiles
 import "strings"
 
 type ReleaseJobProperty struct {
-	Name string
+	Name    string
+	Default interface{}
 }
 
 type ReleaseJobProperties []ReleaseJobProperty
 
-func (rjps ReleaseJobProperties) Contains(name string) bool {
+func (rjps ReleaseJobProperties) Find(name string) (ReleaseJobProperty, bool) {
 	for _, property := range rjps {
 		if strings.HasPrefix(name, property.Name) {
-			return true
+			return property, true
 		}
 	}
 
-	return false
+	return ReleaseJobProperty{}, false
 }
