@@ -41,6 +41,11 @@ The following release packages are not being used:
 Release: diego
   - acceptance-tests
   - golang1.5
+
+
+The following properties can be referenced by link:
+Job: diego_brain
+  - link-property (provided by "auctioneer" link in "auctioneer" job of "diego" release)
 `))
 	})
 })

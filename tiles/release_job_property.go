@@ -5,6 +5,9 @@ import "strings"
 type ReleaseJobProperty struct {
 	Name    string
 	Default interface{}
+	Link    string
+	Job     string
+	Release string
 }
 
 type ReleaseJobProperties []ReleaseJobProperty

@@ -13,8 +13,11 @@ type MetadataJob struct {
 }
 
 type MetadataJobManifestProperty struct {
-	Name  string
-	Value interface{}
+	Name    string
+	Value   interface{}
+	Link    string
+	Job     string
+	Release string
 
 	ReferencesParsedManifest bool
 	MirrorsDefault           bool
@@ -92,4 +95,32 @@ func propertiesFromManifest(node map[interface{}]interface{}) []MetadataJobManif
 	}
 
 	return keys
+}
+
+func (mj MetadataJob) LinkableProperties(releases []Release) MetadataJobManifestProperties {
+	var releaseJobProperties ReleaseJobProperties
+	for _, template := range mj.Templates {
+		for _, release := range releases {
+			if template.Release == release.Name {
+				for _, releaseJob := range release.Jobs {
+					if template.Name == releaseJob.Name {
+						releaseJobProperties = append(releaseJobProperties, releaseJob.Properties...)
+					}
+				}
+			}
+		}
+	}
+
+	var linkableProperties []MetadataJobManifestProperty
+	for _, property := range propertiesFromManifest(mj.ParsedManifest) {
+		jobProperty, found := releaseJobProperties.Find(property.Name)
+		if found && jobProperty.Link != "" {
+			property.Link = jobProperty.Link
+			property.Job = jobProperty.Job
+			property.Release = jobProperty.Release
+			linkableProperties = append(linkableProperties, property)
+		}
+	}
+
+	return linkableProperties
 }

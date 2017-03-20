@@ -38,7 +38,11 @@ var _ = Describe("Parser", func() {
 							{
 								Name: "some-job",
 								Properties: []tiles.ReleaseJobProperty{
-									{Name: "some-property"},
+									{
+										Name:    "some-property",
+										Job:     "some-job",
+										Release: "some-release",
+									},
 								},
 							},
 						},

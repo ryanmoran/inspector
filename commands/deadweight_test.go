@@ -56,13 +56,19 @@ var _ = Describe("Deadweight", func() {
 							{
 								Name: "some-job-template-1",
 								Properties: []tiles.ReleaseJobProperty{
-									{Name: "property.first"},
-									{Name: "property.third"},
-									{Name: "property.fifth", Default: "default"},
+									{Name: "property.first", Job: "some-job-template-1", Release: "some-release", Link: "some-link"},
+									{Name: "property.third", Job: "some-job-template-1", Release: "some-release"},
+									{Name: "property.fifth", Default: "default", Job: "some-job-template-1", Release: "some-release"},
 								},
 								Packages: []string{
 									"some-package-1",
 									"some-package-3",
+								},
+								Provides: []tiles.ReleaseJobProvideLink{
+									{
+										Name:       "some-link",
+										Properties: []string{"property.first"},
+									},
 								},
 							},
 							{
@@ -97,6 +103,9 @@ var _ = Describe("Deadweight", func() {
 			Expect(stdout.String()).To(ContainSubstring(`Release: some-release
   - some-package-2
   - some-package-5`))
+
+			Expect(stdout.String()).To(ContainSubstring(`Job: some-job
+  - property.first (provided by "some-link" link in "some-job-template-1" job of "some-release" release)`))
 		})
 	})
 

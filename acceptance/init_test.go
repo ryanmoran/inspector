@@ -50,6 +50,7 @@ job_types:
   - name: auctioneer
     release: diego
   manifest: |
+    link-property: banana
     capi:
       nsync:
         cc:
@@ -90,44 +91,126 @@ jobs:
 - name: rep
 `)
 
-	releaseJobManifestFile := bytes.NewBufferString(`---
+	auctioneerReleaseJobManifestFile := bytes.NewBufferString(`---
 name: auctioneer
 packages:
 - auctioneer-pkg
 - golang1.6
 - 1.7golang
+provides:
+- name: auctioneer
+  type: auctioneer
+  properties:
+  - link-property
+consumes:
+- name: auctioneer
+  type: auctioneer
+  optional: true
 properties:
   some-property: {}
+  link-property: {}
   capi.stager.cc.property_default:
     default: default-value
 `)
 
-	releaseJobFile := bytes.NewBuffer([]byte{})
-	gzipReleaseJobFile := gzip.NewWriter(releaseJobFile)
-	tarGzipReleaseJobFile := tar.NewWriter(gzipReleaseJobFile)
-	err := tarGzipReleaseJobFile.WriteHeader(&tar.Header{
+	nsyncReleaseJobManifestFile := bytes.NewBufferString(`---
+name: nsync
+packages:
+- nsync-pkg
+properties:
+  capi.nsync.cc.staging_upload_password: {}
+  capi.nsync.cc.staging_upload_user: {}
+`)
+
+	repReleaseJobManifestFile := bytes.NewBufferString(`---
+name: rep
+packages:
+- rep-pkg
+properties: {}
+`)
+
+	// create auctioneer job
+	auctioneerReleaseJobFile := bytes.NewBuffer([]byte{})
+	gzipAuctioneerReleaseJobFile := gzip.NewWriter(auctioneerReleaseJobFile)
+	tarGzipAuctioneerReleaseJobFile := tar.NewWriter(gzipAuctioneerReleaseJobFile)
+	err := tarGzipAuctioneerReleaseJobFile.WriteHeader(&tar.Header{
 		Name: "job.MF",
-		Size: int64(releaseJobManifestFile.Len()),
+		Size: int64(auctioneerReleaseJobManifestFile.Len()),
 	})
 	if err != nil {
 		return "", err
 	}
 
-	_, err = io.Copy(tarGzipReleaseJobFile, releaseJobManifestFile)
+	_, err = io.Copy(tarGzipAuctioneerReleaseJobFile, auctioneerReleaseJobManifestFile)
 	if err != nil {
 		return "", err
 	}
 
-	err = tarGzipReleaseJobFile.Close()
+	err = tarGzipAuctioneerReleaseJobFile.Close()
 	if err != nil {
 		return "", err
 	}
 
-	err = gzipReleaseJobFile.Close()
+	err = gzipAuctioneerReleaseJobFile.Close()
 	if err != nil {
 		return "", err
 	}
 
+	// create nsync job
+	nsyncReleaseJobFile := bytes.NewBuffer([]byte{})
+	gzipNsyncReleaseJobFile := gzip.NewWriter(nsyncReleaseJobFile)
+	tarGzipNsyncReleaseJobFile := tar.NewWriter(gzipNsyncReleaseJobFile)
+	err = tarGzipNsyncReleaseJobFile.WriteHeader(&tar.Header{
+		Name: "job.MF",
+		Size: int64(nsyncReleaseJobManifestFile.Len()),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.Copy(tarGzipNsyncReleaseJobFile, nsyncReleaseJobManifestFile)
+	if err != nil {
+		return "", err
+	}
+
+	err = tarGzipNsyncReleaseJobFile.Close()
+	if err != nil {
+		return "", err
+	}
+
+	err = gzipNsyncReleaseJobFile.Close()
+	if err != nil {
+		return "", err
+	}
+
+	// create rep job
+	repReleaseJobFile := bytes.NewBuffer([]byte{})
+	gzipRepReleaseJobFile := gzip.NewWriter(repReleaseJobFile)
+	tarGzipRepReleaseJobFile := tar.NewWriter(gzipRepReleaseJobFile)
+	err = tarGzipRepReleaseJobFile.WriteHeader(&tar.Header{
+		Name: "job.MF",
+		Size: int64(repReleaseJobManifestFile.Len()),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.Copy(tarGzipRepReleaseJobFile, repReleaseJobManifestFile)
+	if err != nil {
+		return "", err
+	}
+
+	err = tarGzipRepReleaseJobFile.Close()
+	if err != nil {
+		return "", err
+	}
+
+	err = gzipRepReleaseJobFile.Close()
+	if err != nil {
+		return "", err
+	}
+
+	// create release
 	releaseFile := bytes.NewBuffer([]byte{})
 	gzipReleaseFile := gzip.NewWriter(releaseFile)
 	tarGzipReleaseFile := tar.NewWriter(gzipReleaseFile)
@@ -145,14 +228,40 @@ properties:
 	}
 
 	err = tarGzipReleaseFile.WriteHeader(&tar.Header{
-		Name: "jobs/some_job.tgz",
-		Size: int64(releaseJobFile.Len()),
+		Name: "jobs/auctioneer.tgz",
+		Size: int64(auctioneerReleaseJobFile.Len()),
 	})
 	if err != nil {
 		return "", err
 	}
 
-	_, err = io.Copy(tarGzipReleaseFile, releaseJobFile)
+	_, err = io.Copy(tarGzipReleaseFile, auctioneerReleaseJobFile)
+	if err != nil {
+		return "", err
+	}
+
+	err = tarGzipReleaseFile.WriteHeader(&tar.Header{
+		Name: "jobs/nsync.tgz",
+		Size: int64(nsyncReleaseJobFile.Len()),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.Copy(tarGzipReleaseFile, nsyncReleaseJobFile)
+	if err != nil {
+		return "", err
+	}
+
+	err = tarGzipReleaseFile.WriteHeader(&tar.Header{
+		Name: "jobs/rep.tgz",
+		Size: int64(repReleaseJobFile.Len()),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.Copy(tarGzipReleaseFile, repReleaseJobFile)
 	if err != nil {
 		return "", err
 	}
@@ -184,7 +293,7 @@ properties:
 		return "", err
 	}
 
-	zipReleaseFile, err := zipFile.Create("compiled_releases/some-release-1.2.3.tgz")
+	zipReleaseFile, err := zipFile.Create("compiled_releases/diego-1.2.3.tgz")
 	if err != nil {
 		return "", err
 	}

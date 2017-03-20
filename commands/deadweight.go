@@ -79,6 +79,18 @@ func (d Deadweight) Execute(args []string) error {
 		}
 	}
 
+	fmt.Fprintln(d.stdout, "\n\nThe following properties can be referenced by link:")
+	for _, job := range product.Metadata.Jobs {
+		linkableProperties := job.LinkableProperties(product.Releases)
+		if len(linkableProperties) > 0 {
+			fmt.Fprintf(d.stdout, "Job: %s\n", job.Name)
+			sort.Sort(linkableProperties)
+			for _, property := range linkableProperties {
+				fmt.Fprintf(d.stdout, "  - %s (provided by %q link in %q job of %q release)\n", property.Name, property.Link, property.Job, property.Release)
+			}
+		}
+	}
+
 	return nil
 }
 

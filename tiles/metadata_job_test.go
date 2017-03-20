@@ -93,4 +93,56 @@ var _ = Describe("MetadataJob", func() {
 			}))
 		})
 	})
+
+	Describe("LinkableProperties", func() {
+		It("returns a list of properties that can be referenced by link", func() {
+			metadataJob := tiles.MetadataJob{
+				Templates: []tiles.MetadataJobTemplate{
+					{
+						Name:    "some-job",
+						Release: "some-release",
+					},
+				},
+				ParsedManifest: map[interface{}]interface{}{
+					"property": map[interface{}]interface{}{
+						"first": "one",
+					},
+					"link": map[interface{}]interface{}{
+						"first": "banana",
+					},
+				},
+			}
+
+			releases := []tiles.Release{
+				{
+					Name: "some-release",
+					Jobs: []tiles.ReleaseJob{
+						{
+							Name: "some-job",
+							Properties: []tiles.ReleaseJobProperty{
+								{Name: "link.first", Link: "some-link", Job: "some-job", Release: "some-release"},
+							},
+							Provides: []tiles.ReleaseJobProvideLink{
+								{
+									Name:       "some-link",
+									Type:       "some-link-type",
+									Properties: []string{"link.first"},
+								},
+							},
+						},
+					},
+				},
+			}
+
+			Expect(metadataJob.LinkableProperties(releases)).To(ConsistOf([]tiles.MetadataJobManifestProperty{
+				{
+					Name:    "link.first",
+					Link:    "some-link",
+					Job:     "some-job",
+					Release: "some-release",
+					Value:   "banana",
+				},
+			}))
+		})
+	})
 })
