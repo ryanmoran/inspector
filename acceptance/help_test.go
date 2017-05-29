@@ -19,6 +19,7 @@ Usage: inspector [options] <command> [<args>]
 Commands:
   deadweight  something dead
   help        prints this usage information
+  pkg-dep     something dep
 `
 
 const HELP_USAGE = `inspector help
