@@ -17,9 +17,10 @@ Usage: inspector [options] <command> [<args>]
   -p, --path  string  path to the product file
 
 Commands:
-  deadweight  something dead
-  help        prints this usage information
-  pkg-dep     something dep
+  broken-release-refs  prints missing releases
+  deadweight           something dead
+  help                 prints this usage information
+  pkg-dep              something dep
 `
 
 const HELP_USAGE = `inspector help

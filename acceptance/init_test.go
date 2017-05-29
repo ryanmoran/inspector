@@ -17,8 +17,9 @@ import (
 )
 
 var (
-	pathToMain string
-	pathToTile string
+	pathToMain                  string
+	pathToTile                  string
+	pathToBrokenReleaseRefsTile string
 )
 
 func TestAcceptance(t *testing.T) {
@@ -32,6 +33,9 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	pathToTile, err = buildTile()
+	Expect(err).NotTo(HaveOccurred())
+
+	pathToBrokenReleaseRefsTile, err = buildBrokenReleaseRefsTile()
 	Expect(err).NotTo(HaveOccurred())
 })
 
@@ -262,6 +266,146 @@ properties: {}
 	}
 
 	_, err = io.Copy(tarGzipReleaseFile, repReleaseJobFile)
+	if err != nil {
+		return "", err
+	}
+
+	err = tarGzipReleaseFile.Close()
+	if err != nil {
+		return "", nil
+	}
+
+	err = gzipReleaseFile.Close()
+	if err != nil {
+		return "", nil
+	}
+
+	productFile, err := ioutil.TempFile("", "")
+	if err != nil {
+		return "", err
+	}
+
+	zipFile := zip.NewWriter(productFile)
+
+	zipMetadataFile, err := zipFile.Create("metadata/banana.yml")
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.Copy(zipMetadataFile, metadataFile)
+	if err != nil {
+		return "", err
+	}
+
+	zipReleaseFile, err := zipFile.Create("compiled_releases/diego-1.2.3.tgz")
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.Copy(zipReleaseFile, releaseFile)
+	if err != nil {
+		return "", err
+	}
+
+	err = zipFile.Close()
+	if err != nil {
+		return "", err
+	}
+
+	err = productFile.Close()
+	if err != nil {
+		return "", err
+	}
+
+	return productFile.Name(), nil
+}
+
+func buildBrokenReleaseRefsTile() (string, error) {
+	metadataFile := bytes.NewBufferString(`---
+job_types:
+- name: diego_brain
+  templates:
+  - name: auctioneer
+    release: new-diego
+  - name: some-job
+    release: new-diego
+  - name: some-other-job
+    release: capi-release
+  manifest: |
+    some-property: some-value
+- name: cloud_controller
+  templates:
+  - name: some-cc-job
+    release: capi-release
+  manifest: |
+`)
+
+	releaseManifestFile := bytes.NewBufferString(`---
+name: old-diego
+jobs:
+- name: auctioneer
+`)
+
+	auctioneerReleaseJobManifestFile := bytes.NewBufferString(`---
+name: auctioneer
+packages:
+- auctioneer-pkg
+properties:
+`)
+
+	// create auctioneer job
+	auctioneerReleaseJobFile := bytes.NewBuffer([]byte{})
+	gzipAuctioneerReleaseJobFile := gzip.NewWriter(auctioneerReleaseJobFile)
+	tarGzipAuctioneerReleaseJobFile := tar.NewWriter(gzipAuctioneerReleaseJobFile)
+	err := tarGzipAuctioneerReleaseJobFile.WriteHeader(&tar.Header{
+		Name: "job.MF",
+		Size: int64(auctioneerReleaseJobManifestFile.Len()),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.Copy(tarGzipAuctioneerReleaseJobFile, auctioneerReleaseJobManifestFile)
+	if err != nil {
+		return "", err
+	}
+
+	err = tarGzipAuctioneerReleaseJobFile.Close()
+	if err != nil {
+		return "", err
+	}
+
+	err = gzipAuctioneerReleaseJobFile.Close()
+	if err != nil {
+		return "", err
+	}
+
+	// create release
+	releaseFile := bytes.NewBuffer([]byte{})
+	gzipReleaseFile := gzip.NewWriter(releaseFile)
+	tarGzipReleaseFile := tar.NewWriter(gzipReleaseFile)
+	err = tarGzipReleaseFile.WriteHeader(&tar.Header{
+		Name: "release.MF",
+		Size: int64(releaseManifestFile.Len()),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.Copy(tarGzipReleaseFile, releaseManifestFile)
+	if err != nil {
+		return "", err
+	}
+
+	err = tarGzipReleaseFile.WriteHeader(&tar.Header{
+		Name: "jobs/auctioneer.tgz",
+		Size: int64(auctioneerReleaseJobFile.Len()),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.Copy(tarGzipReleaseFile, auctioneerReleaseJobFile)
 	if err != nil {
 		return "", err
 	}
