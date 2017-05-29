@@ -18,7 +18,7 @@ func (s Set) Execute(command string, args []string) error {
 
 	err := cmd.Execute(args)
 	if err != nil {
-		return fmt.Errorf("could not execute %q: %s", command, err)
+		return fmt.Errorf("%s", err)
 	}
 
 	return nil

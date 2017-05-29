@@ -45,7 +45,7 @@ var _ = Describe("Set", func() {
 					}
 
 					err := commandSet.Execute("erroring-command", []string{})
-					Expect(err).To(MatchError("could not execute \"erroring-command\": failed to execute"))
+					Expect(err).To(MatchError("failed to execute"))
 				})
 			})
 		})
