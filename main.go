@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	stdout := log.New(os.Stdout, "", 0)
+	stderr := log.New(os.Stderr, "", 0)
 
 	var global struct {
 		Help bool   `short:"h" long:"help" description:"prints this usage information" default:"false"`
@@ -19,12 +19,12 @@ func main() {
 
 	args, err := flags.Parse(&global, os.Args[1:])
 	if err != nil {
-		stdout.Fatal(err)
+		stderr.Fatal(err)
 	}
 
 	globalFlagsUsage, err := flags.Usage(global)
 	if err != nil {
-		stdout.Fatal(err)
+		stderr.Fatal(err)
 	}
 
 	var command string
@@ -42,9 +42,10 @@ func main() {
 	commandSet["help"] = commands.NewHelp(os.Stdout, globalFlagsUsage, commandSet)
 	commandSet["deadweight"] = commands.NewDeadweight(productParser, os.Stdout)
 	commandSet["pkg-dep"] = commands.NewPkgDep(productParser, os.Stdout)
+	commandSet["broken-release-refs"] = commands.NewBrokenReleaseRefs(productParser)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
-		stdout.Fatal(err)
+		stderr.Fatal(err)
 	}
 }
