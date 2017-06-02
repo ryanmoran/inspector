@@ -50,7 +50,12 @@ func (d Deadweight) Execute(args []string) error {
 	}
 
 	fmt.Fprintln(d.stdout, "\n\nThe following release jobs are not being used:")
-	for _, release := range product.UnusedReleaseJobs() {
+	releases, err := product.UnusedReleaseJobs()
+	if err != nil {
+		return err
+	}
+
+	for _, release := range releases {
 		fmt.Fprintf(d.stdout, "Release: %s\n", release.Name)
 		var jobs []string
 		for _, job := range release.Jobs {

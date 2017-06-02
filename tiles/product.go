@@ -1,11 +1,13 @@
 package tiles
 
+import "fmt"
+
 type Product struct {
 	Metadata Metadata
 	Releases []Release
 }
 
-func (p Product) UnusedReleaseJobs() []Release {
+func (p Product) UnusedReleaseJobs() ([]Release, error) {
 	var releases []Release
 
 	jobTemplateUsageCounts := map[string]map[string]int{}
@@ -18,6 +20,9 @@ func (p Product) UnusedReleaseJobs() []Release {
 
 	for _, job := range p.Metadata.Jobs {
 		for _, template := range job.Templates {
+			if _, ok := jobTemplateUsageCounts[template.Release]; !ok {
+				return []Release{}, fmt.Errorf(`%q is not in the tile (referenced by template %q in job %q)`, template.Release, template.Name, job.Name)
+			}
 			jobTemplateUsageCounts[template.Release][template.Name]++
 		}
 	}
@@ -42,7 +47,7 @@ func (p Product) UnusedReleaseJobs() []Release {
 		}
 	}
 
-	return releases
+	return releases, nil
 }
 
 func (p Product) UnusedReleasePackages() []Release {
