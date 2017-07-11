@@ -52,7 +52,7 @@ func (mj MetadataJob) UnusedManifestProperties(releases []Release) MetadataJobMa
 	}
 
 	var unusedManifestProperties []MetadataJobManifestProperty
-	for _, property := range propertiesFromManifest(mj.ParsedManifest) {
+	for _, property := range mj.Properties() {
 		jobProperty, found := releaseJobProperties.Find(property.Name)
 		if !found {
 			unusedManifestProperties = append(unusedManifestProperties, property)
@@ -65,6 +65,10 @@ func (mj MetadataJob) UnusedManifestProperties(releases []Release) MetadataJobMa
 	}
 
 	return unusedManifestProperties
+}
+
+func (mj MetadataJob) Properties() []MetadataJobManifestProperty {
+	return propertiesFromManifest(mj.ParsedManifest)
 }
 
 func propertiesFromManifest(node map[interface{}]interface{}) []MetadataJobManifestProperty {

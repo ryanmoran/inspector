@@ -43,6 +43,7 @@ func main() {
 	commandSet["deadweight"] = commands.NewDeadweight(productParser, os.Stdout)
 	commandSet["pkg-dep"] = commands.NewPkgDep(productParser, os.Stdout)
 	commandSet["broken-release-refs"] = commands.NewBrokenReleaseRefs(productParser)
+	commandSet["grep"] = commands.NewGrep(productParser)
 
 	err = commandSet.Execute(command, args)
 	if err != nil {
