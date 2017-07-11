@@ -136,8 +136,14 @@ func (p Parser) Parse() (Product, error) {
 								Packages []string `yaml:"packages"`
 								Provides []struct {
 									Name       string   `yaml:"name"`
+									Type       string   `yaml:"type"`
 									Properties []string `yaml:"properties"`
 								} `yaml:"provides"`
+								Consumes []struct {
+									Name     string `yaml:"name"`
+									Type     string `yaml:"type"`
+									Optional bool   `yaml:"optional"`
+								} `yaml:"consumes"`
 							}
 							err = yaml.Unmarshal(releaseJobManifestContents, &releaseJobManifest)
 							if err != nil {
@@ -166,10 +172,30 @@ func (p Parser) Parse() (Product, error) {
 								})
 							}
 
+							var provides []ReleaseJobProvideLink
+							for _, link := range releaseJobManifest.Provides {
+								provides = append(provides, ReleaseJobProvideLink{
+									Name:       link.Name,
+									Type:       link.Type,
+									Properties: link.Properties,
+								})
+							}
+
+							var consumes []ReleaseJobConsumeLink
+							for _, link := range releaseJobManifest.Consumes {
+								consumes = append(consumes, ReleaseJobConsumeLink{
+									Name:     link.Name,
+									Type:     link.Type,
+									Optional: link.Optional,
+								})
+							}
+
 							releaseManifest.Jobs = append(releaseManifest.Jobs, ReleaseJob{
 								Name:       releaseJobManifest.Name,
 								Properties: releaseJobProperties,
 								Packages:   releaseJobManifest.Packages,
+								Provides:   provides,
+								Consumes:   consumes,
 							})
 						}
 

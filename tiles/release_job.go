@@ -5,6 +5,7 @@ type ReleaseJob struct {
 	Properties []ReleaseJobProperty
 	Packages   []string
 	Provides   []ReleaseJobProvideLink
+	Consumes   []ReleaseJobConsumeLink
 }
 
 func (rj ReleaseJob) AllPackages(release Release) []string {
